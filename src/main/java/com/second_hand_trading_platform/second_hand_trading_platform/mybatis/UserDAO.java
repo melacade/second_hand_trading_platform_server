@@ -62,6 +62,10 @@ public interface UserDAO {
     @Select("SELECT * FROM security_questions WHERE user_id=#{user_id} order by _id")
     List<SecurityQuestion> getSecurityProblemsByUserID(@Param("user_id") String userID);
 
-    @Update("UPDATE security_questions set question=#{question}, answer=#{answer}, change_time=#{changeTime}")
+    @Update("UPDATE security_questions set question=#{question}, answer=#{answer}, change_time=#{changeTime} where _id=#{id}")
     void updateSecurityQuestion(SecurityQuestion validate);
+
+
+    @Update("UPDATE user_private set payment_PWD=#{payment} where user_id=#{user_id}")
+    void updatePayment(@Param("payment") String payment,@Param("user_id") String userID);
 }

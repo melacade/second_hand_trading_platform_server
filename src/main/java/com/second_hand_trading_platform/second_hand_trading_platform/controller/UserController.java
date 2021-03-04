@@ -1,13 +1,13 @@
 package com.second_hand_trading_platform.second_hand_trading_platform.controller;
 
-import com.second_hand_trading_platform.second_hand_trading_platform.modules.common.dto.input.authed_query.ChangePWDQuery;
-import com.second_hand_trading_platform.second_hand_trading_platform.modules.common.dto.input.authed_query.UpdateInfoQuery;
+import com.second_hand_trading_platform.second_hand_trading_platform.modules.common.dto.input.authed_query.*;
 import com.second_hand_trading_platform.second_hand_trading_platform.modules.common.dto.input.nomal_query.RegisterQuery;
 import com.second_hand_trading_platform.second_hand_trading_platform.modules.common.dto.output.ApiResult;
 import com.second_hand_trading_platform.second_hand_trading_platform.pojo.entity.user.SecurityQuestion;
 import com.second_hand_trading_platform.second_hand_trading_platform.pojo.entity.user.User;
 import com.second_hand_trading_platform.second_hand_trading_platform.pojo.entity.user.UserBaseInfo;
 import com.second_hand_trading_platform.second_hand_trading_platform.service.UserService;
+import com.second_hand_trading_platform.second_hand_trading_platform.utils.PasswordUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
@@ -42,9 +42,13 @@ public class UserController {
     }
 
     @PostMapping("/createSecurityQuestion")
-    ApiResult createSecurityQuestion(@RequestBody List<SecurityQuestion> questions){
+    ApiResult createSecurityQuestion(@RequestBody AddNewSecurityQuestion auth){
+        List<SecurityQuestion> questions = auth.getQuestions();
         if (questions.size() != 3){
             return ApiResult.fail("安全问题数目不正确！");
+        }
+        if (auth.getPassword() != null&&!PasswordUtils.isValidPassword(auth.getPassword(), auth.getUser().getUserPrivate().getPassword(), auth.getUser().getUserPrivate().getSalt())){
+            return ApiResult.fail("密码不正确");
         }
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         String userId = user.getUserBaseInfo().getId();
@@ -57,6 +61,18 @@ public class UserController {
             userService.createSecurityQuestion(question,user.getUserPrivate().getSalt());
         }
         return ApiResult.ok("创建成功");
+    }
+
+
+    @PostMapping("/resetSecurityProblems")
+    ApiResult resetSecurityProblems(@RequestBody List<SecurityQuestion> questions){
+        User user =(User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        if(!userService.isTryingReset(questions,user.getUserBaseInfo().getId())|| questions.size() != 3){
+            return ApiResult.fail("修改失败");
+        }else{
+            userService.resetSecurityProblems(questions,user.getUserPrivate().getSalt());
+        }
+        return ApiResult.ok("修改成功");
     }
 
     @PostMapping("/changePWD")
@@ -98,5 +114,23 @@ public class UserController {
         }
         validate = userService.validateProblems(questions,user.getUserPrivate().getSalt());
         return ApiResult.ok("验证成功",validate);
+    }
+
+    @PostMapping("/addPayment")
+    ApiResult addPayment(@RequestBody AddPaymentQuery addPaymentQuery){
+        if(!addPaymentQuery.isValid()) return ApiResult.fail("不合法的请求");
+        if(!userService.isGoodPWD(addPaymentQuery.getPassword())) return ApiResult.fail("密码错误");
+        boolean status = userService.updatePayment(addPaymentQuery);
+        return status ? ApiResult.ok("添加支付密码成功！", true) : ApiResult.fail("添加失败");
+    }
+    @PostMapping("/resetPayment")
+    ApiResult resetPayment(@RequestBody ResetPayment resetPayment){
+        if(!resetPayment.isValid()) return ApiResult.fail("不合法的请求");
+        if(!userService.isGoodPWD(resetPayment.getPassword())) return ApiResult.fail("密码错误");
+        String old = PasswordUtils.encodePassword(resetPayment.getOldPayment(), resetPayment.getUser().getUserPrivate().getSalt());
+        if(old!=null&&!old.equalsIgnoreCase(resetPayment.getUser().getUserPrivate().getPaymentPWD())) return ApiResult.fail("密码或旧的支付密码错误！");
+
+        boolean status = userService.resetPayment(resetPayment);
+        return status ? ApiResult.ok("修改支付密码成功！", true) : ApiResult.fail("添加失败");
     }
 }

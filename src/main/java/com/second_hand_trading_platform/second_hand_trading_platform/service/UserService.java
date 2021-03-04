@@ -1,11 +1,14 @@
 package com.second_hand_trading_platform.second_hand_trading_platform.service;
 
+import com.second_hand_trading_platform.second_hand_trading_platform.modules.common.dto.input.authed_query.AddPaymentQuery;
 import com.second_hand_trading_platform.second_hand_trading_platform.modules.common.dto.input.authed_query.ChangePWDQuery;
+import com.second_hand_trading_platform.second_hand_trading_platform.modules.common.dto.input.authed_query.ResetPayment;
 import com.second_hand_trading_platform.second_hand_trading_platform.modules.common.dto.input.nomal_query.RegisterQuery;
 import com.second_hand_trading_platform.second_hand_trading_platform.pojo.entity.user.*;
 import com.second_hand_trading_platform.second_hand_trading_platform.utils.PasswordUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -170,5 +173,56 @@ public class UserService implements UserDetailsService {
         }catch (Exception e){
             return false;
         }
+    }
+
+    // 大于5 分钟返回false
+    public boolean isTryingReset(List<SecurityQuestion> res, String userID) {
+        List<SecurityQuestion> questions = userMapperDAO.getSecurityProblemsByUserID(userID);
+        SecurityQuestion question = questions.get(0);
+        Long changeTime = question.getChangeTime();
+        long l = System.currentTimeMillis();
+        for(int i = 0; i < 3; i++){
+            res.get(i).setId(questions.get(i).getId());
+            res.get(i).setChangeTime(0L);
+        }
+        return l - changeTime < 300000L;
+    }
+
+    public void resetSecurityProblems(List<SecurityQuestion> questions,String salt) {
+        for (SecurityQuestion question : questions) {
+            question.setAnswer(PasswordUtils.encodePassword(question.getAnswer(),salt));
+            userMapperDAO.updateSecurityQuestion(question);
+        }
+    }
+
+    public boolean isGoodPWD(String pwd){
+        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        String s = PasswordUtils.encodePassword(pwd, user.getUserPrivate().getSalt());
+        return user.getUserPrivate().getPassword().equalsIgnoreCase(s);
+    }
+
+    public boolean updatePayment(AddPaymentQuery addPaymentQuery) {
+        if(this.hasPaymentPWD(addPaymentQuery.getUser().getUserBaseInfo().getId())) return false;
+        try {
+            String s = PasswordUtils.encodePassword(addPaymentQuery.getPayment(), addPaymentQuery.getUser().getUserPrivate().getSalt());
+
+            userMapperDAO.updatePayment(s, addPaymentQuery.getUser().getUserBaseInfo().getId());
+            addPaymentQuery.getUser().getUserPrivate().setPaymentPWD(s);
+        }catch (Exception e){
+            return false;
+        }
+        return true;
+    }
+
+    public boolean resetPayment(ResetPayment resetPayment) {
+        if(!this.hasPaymentPWD(resetPayment.getUser().getUserBaseInfo().getId())) return false;
+        try {
+            String s = PasswordUtils.encodePassword(resetPayment.getPayment(), resetPayment.getUser().getUserPrivate().getSalt());
+            userMapperDAO.updatePayment(s, resetPayment.getUser().getUserBaseInfo().getId());
+            resetPayment.getUser().getUserPrivate().setPaymentPWD(s);
+        }catch (Exception e){
+            return false;
+        }
+        return true;
     }
 }
