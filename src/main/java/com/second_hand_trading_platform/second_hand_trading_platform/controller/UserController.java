@@ -2,6 +2,7 @@ package com.second_hand_trading_platform.second_hand_trading_platform.controller
 
 import com.second_hand_trading_platform.second_hand_trading_platform.modules.common.dto.input.authed_query.*;
 import com.second_hand_trading_platform.second_hand_trading_platform.modules.common.dto.input.nomal_query.RegisterQuery;
+import com.second_hand_trading_platform.second_hand_trading_platform.modules.common.dto.input.nomal_query.ValidateProblems;
 import com.second_hand_trading_platform.second_hand_trading_platform.modules.common.dto.output.ApiResult;
 import com.second_hand_trading_platform.second_hand_trading_platform.pojo.entity.user.SecurityQuestion;
 import com.second_hand_trading_platform.second_hand_trading_platform.pojo.entity.user.User;
@@ -13,6 +14,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/user")
@@ -74,21 +76,20 @@ public class UserController {
         }
         return ApiResult.ok("修改成功");
     }
-
-    @PostMapping("/changePWD")
-    ApiResult changePWD(@RequestBody ChangePWDQuery query){
-        if (query.isValid()){
-            if(userService.changePWD(query)){
-                return ApiResult.ok("更改成功");
-            }
-        }
-        return ApiResult.fail("失败");
-    }
     
     @GetMapping("/checkSecuriy")
-    ApiResult checkSecurity(){
-        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        List<SecurityQuestion> questions = userService.checkSecurity(user.getUserBaseInfo().getId());
+    ApiResult checkSecurity(String account){
+        User user;
+        if(account == null||account.equalsIgnoreCase("")){
+           user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        }else{
+           user = new User();
+           user.setUserPrivate(userService.getUserByUserName(account));
+           if(user.getUserPrivate() == null){
+               return ApiResult.fail(-1,"没有用户");
+           }
+        }
+        List<SecurityQuestion> questions = userService.checkSecurity(user.getUserPrivate().getUserID());
         if(questions != null && questions.size() == 3){
             return ApiResult.ok("检查成功",questions);
         }
@@ -103,14 +104,21 @@ public class UserController {
     }
 
     @PostMapping("/validateProblems")
-    ApiResult validateProblems(@RequestBody List<SecurityQuestion> questions){
+    ApiResult validateProblems(@RequestBody ValidateProblems val){
+        List<SecurityQuestion> questions =(List<SecurityQuestion>) val.getQuestions();
         boolean validate = false;
         if(questions.size() != 3){
             return ApiResult.fail("非法");
         }
-        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        User user;
+        if(val.getAccount() == null){
+            user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        }else{
+            user = new User();
+            user.setUserPrivate(userService.getUserByUserName(val.getAccount()));
+        }
         for (SecurityQuestion question : questions) {
-            question.setUserID(user.getUserBaseInfo().getId());
+            question.setUserID(user.getUserPrivate().getUserID());
         }
         validate = userService.validateProblems(questions,user.getUserPrivate().getSalt());
         return ApiResult.ok("验证成功",validate);
@@ -132,5 +140,12 @@ public class UserController {
 
         boolean status = userService.resetPayment(resetPayment);
         return status ? ApiResult.ok("修改支付密码成功！", true) : ApiResult.fail("添加失败");
+    }
+
+
+    @PostMapping("/resetPassword")
+    ApiResult resetPassword(@RequestBody Map<String,String> body){
+        boolean flag = userService.resetPassword(body.get("password"),body.getOrDefault("account",null));
+        return flag ? ApiResult.ok("修改成功") : ApiResult.fail("修改失败!");
     }
 }

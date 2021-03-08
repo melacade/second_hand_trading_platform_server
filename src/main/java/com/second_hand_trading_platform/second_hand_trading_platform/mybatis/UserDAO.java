@@ -68,4 +68,6 @@ public interface UserDAO {
 
     @Update("UPDATE user_private set payment_PWD=#{payment} where user_id=#{user_id}")
     void updatePayment(@Param("payment") String payment,@Param("user_id") String userID);
+
+
 }

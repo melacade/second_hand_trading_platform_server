@@ -18,6 +18,9 @@ import com.second_hand_trading_platform.second_hand_trading_platform.mybatis.Use
 
 import java.util.*;
 
+/**
+ *
+ */
 @Service
 public class UserService implements UserDetailsService {
     @Autowired
@@ -67,6 +70,10 @@ public class UserService implements UserDetailsService {
         user.setUserID(userBaseInfo.getId());
         return user;
     }
+    public User getCurrentUser(){
+        return (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+    }
+
 
     public UserBaseInfo creatUser(RegisterQuery query) {
         if( userMapperDAO.accountExisted(query.getAccount()) >0 ){
@@ -195,6 +202,21 @@ public class UserService implements UserDetailsService {
         }
     }
 
+    public boolean hasValidated(String userId){
+        List<SecurityQuestion> questions = userMapperDAO.getSecurityProblemsByUserID(userId);
+        if(questions == null || questions.isEmpty()){
+            return true;
+        }
+        return System.currentTimeMillis() - questions.get(0).getChangeTime() < 300000L;
+    }
+
+
+
+    /**
+     * @param pwd
+     * 验证密码是否正确
+     * @return 如果密码正确返回true，错误返回false
+     */
     public boolean isGoodPWD(String pwd){
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         String s = PasswordUtils.encodePassword(pwd, user.getUserPrivate().getSalt());
@@ -203,11 +225,13 @@ public class UserService implements UserDetailsService {
 
     public boolean updatePayment(AddPaymentQuery addPaymentQuery) {
         if(this.hasPaymentPWD(addPaymentQuery.getUser().getUserBaseInfo().getId())) return false;
+        if(!this.hasValidated(addPaymentQuery.getUser().getUserID())) return false;
         try {
             String s = PasswordUtils.encodePassword(addPaymentQuery.getPayment(), addPaymentQuery.getUser().getUserPrivate().getSalt());
 
             userMapperDAO.updatePayment(s, addPaymentQuery.getUser().getUserBaseInfo().getId());
             addPaymentQuery.getUser().getUserPrivate().setPaymentPWD(s);
+            this.cancelValidated(addPaymentQuery.getUser().getUserID());
         }catch (Exception e){
             return false;
         }
@@ -216,13 +240,58 @@ public class UserService implements UserDetailsService {
 
     public boolean resetPayment(ResetPayment resetPayment) {
         if(!this.hasPaymentPWD(resetPayment.getUser().getUserBaseInfo().getId())) return false;
+        if(!this.hasValidated(resetPayment.getUser().getUserID())) return false;
         try {
             String s = PasswordUtils.encodePassword(resetPayment.getPayment(), resetPayment.getUser().getUserPrivate().getSalt());
             userMapperDAO.updatePayment(s, resetPayment.getUser().getUserBaseInfo().getId());
             resetPayment.getUser().getUserPrivate().setPaymentPWD(s);
+            this.cancelValidated(resetPayment.getUser().getUserID());
         }catch (Exception e){
             return false;
         }
         return true;
+    }
+
+    public void cancelValidated(String userId){
+        List<SecurityQuestion> questions = userMapperDAO.getSecurityProblemsByUserID(userId);
+        for (SecurityQuestion question : questions) {
+            question.setChangeTime(0L);
+            userMapperDAO.updateSecurityQuestion(question);
+        }
+    }
+
+
+    public boolean resetPassword(String password, String account) {
+        if(password == null) return false;
+        if(account == null){
+            User currentUser = this.getCurrentUser();
+            if(this.hasValidated(currentUser.getUserBaseInfo().getId())){
+                UserPrivate userPrivate = currentUser.getUserPrivate();
+                String s = PasswordUtils.encodePassword(password, userPrivate.getSalt());
+                userPrivate.setPassword(s);
+                userMapperDAO.updateUserPrivate(userPrivate);
+                this.cancelValidated(currentUser.getUserBaseInfo().getId());
+                return true;
+            }
+        }else{
+            UserPrivate userPrivate = userMapperDAO.lodUserPrivateByUsername(account);
+            if(userPrivate == null){
+                return false;
+            }
+            String userID = userPrivate.getUserID();
+            if(this.hasValidated(userID)){
+                String s = PasswordUtils.encodePassword(password, userPrivate.getSalt());
+                userPrivate.setPassword(s);
+                userMapperDAO.updateUserPrivate(userPrivate);
+                this.cancelValidated(userPrivate.getUserID());
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public UserPrivate getUserByUserName(String account) {
+        return userMapperDAO.lodUserPrivateByUsername(account);
     }
 }

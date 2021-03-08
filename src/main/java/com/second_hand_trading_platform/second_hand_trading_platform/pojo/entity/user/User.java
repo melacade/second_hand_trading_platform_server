@@ -19,6 +19,9 @@ public class User implements UserDetails {
     private String userID;
     private List<Role> userRoles;
 
+    public String getUserID(){
+        return userBaseInfo.getId();
+    }
 
 
     @Override
@@ -29,6 +32,8 @@ public class User implements UserDetails {
         }
         return roles;
     }
+
+
 
     @Override
     public String getPassword() {
