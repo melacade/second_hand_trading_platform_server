@@ -11,7 +11,7 @@ import java.util.List;
 
 @Mapper
 public interface GoodsDAO {
-    @Insert("INSERT INTO goods(name,info,price,shop_id,original_price,default_image,count,new_percentage) VALUES(#{name},#{info},#{price},#{shopId},#{originalPrice},#{defaultImage},#{count},#{newPercentage})")
+    @Insert("INSERT INTO goods(_id,name,info,price,original_price,default_image,count,new_percentage,owner_id) VALUES(#{id},#{name},#{info},#{price},#{originalPrice},#{defaultImage},#{count},#{newPercentage},#{ownerId})")
     Integer addNewGoods(Goods goods);
     @Select("Select * FROM goods order by _id LIMIT #{start},#{count}")
     List<Goods> getGoodsByPage(int count,int start);
@@ -27,6 +27,16 @@ public interface GoodsDAO {
             " LIMIT #{index},#{count}"+
             "</script>")
     List<Goods> search(@Param("text") String text,@Param("index") int index,@Param("count") int count,@Param("time") String orderByTime,@Param("price") String orderByPrice);
+
+    @Select("SELECT * FROM goods WHERE _id=#{id}")
+    Goods getGoodsById(@Param("id") String id);
+
+
+    @Select("SELECT * FROM goods_image WHERE goods_id=#{id} ORDER BY _id")
+    List<ImageModel> getGoodsImagesByGoodsId(@Param("id") String id);
+
+    @Select("SELECT MAX(_id) FROM goods")
+    Integer getMaxId();
 
     //List<Goods> getGoodsByUserId();
 }

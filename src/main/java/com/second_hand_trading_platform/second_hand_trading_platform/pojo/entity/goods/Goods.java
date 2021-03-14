@@ -10,10 +10,10 @@ public class Goods {
     String name;
     String info;
     int price;
-    String shopId;
+    String ownerId;
     int originalPrice;
     String defaultImage;
     int count;
     int newPercentage;
-    Timestamp created_at;
+    Timestamp createdAt;
 }

@@ -15,7 +15,10 @@ public class GoodsService {
     GoodsDAO goodsDAOMapper;
 
     public Integer addNewGoods(Goods goods){
-        return goodsDAOMapper.addNewGoods(goods);
+        int id = goodsDAOMapper.getMaxId()+1;
+        goods.setId(id);
+        goodsDAOMapper.addNewGoods(goods);
+        return id;
     }
 
     public boolean addGoodsImages(List<ImageModel> imgs){
@@ -39,5 +42,13 @@ public class GoodsService {
         int count = 10;
         int index = (Integer.parseInt(page) - 1)*count;
        return goodsDAOMapper.search(text,index,count,orderByTime,orderByPrice);
+    }
+
+    public Goods getGoodsInfo(String id) {
+        return goodsDAOMapper.getGoodsById(id);
+    }
+
+    public List<ImageModel> getGoodsImages(String id) {
+        return goodsDAOMapper.getGoodsImagesByGoodsId(id);
     }
 }
