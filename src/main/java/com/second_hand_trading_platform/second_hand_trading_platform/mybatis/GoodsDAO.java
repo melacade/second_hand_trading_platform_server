@@ -13,8 +13,10 @@ import java.util.List;
 public interface GoodsDAO {
     @Insert("INSERT INTO goods(_id,name,info,price,original_price,default_image,count,new_percentage,owner_id) VALUES(#{id},#{name},#{info},#{price},#{originalPrice},#{defaultImage},#{count},#{newPercentage},#{ownerId})")
     Integer addNewGoods(Goods goods);
-    @Select("Select * FROM goods order by _id LIMIT #{start},#{count}")
-    List<Goods> getGoodsByPage(int count,int start);
+
+    @Select("Select * FROM goods order by created_at LIMIT #{start},#{count}")
+    List<Goods> getGoodsByPage(@Param("count") int count, @Param("start") int start);
+
     @Insert("INSERT INTO goods_image(goods_id,image) VALUES(#{goodsId},#{image})")
     Integer addNewGoodsImage(ImageModel img);
 
@@ -37,6 +39,7 @@ public interface GoodsDAO {
 
     @Select("SELECT MAX(_id) FROM goods")
     Integer getMaxId();
+
 
     //List<Goods> getGoodsByUserId();
 }

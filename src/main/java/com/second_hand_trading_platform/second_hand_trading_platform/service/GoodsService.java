@@ -51,4 +51,10 @@ public class GoodsService {
     public List<ImageModel> getGoodsImages(String id) {
         return goodsDAOMapper.getGoodsImagesByGoodsId(id);
     }
+
+
+    public List<Goods> getGoodsByPage(int page, int count) {
+        int start = (page - 1) * count;
+        return goodsDAOMapper.getGoodsByPage(count,start);
+    }
 }

@@ -1,6 +1,7 @@
 package com.second_hand_trading_platform.second_hand_trading_platform.mybatis;
 
 
+import com.second_hand_trading_platform.second_hand_trading_platform.pojo.entity.user.UserAddress;
 import org.apache.ibatis.annotations.*;
 
 import com.second_hand_trading_platform.second_hand_trading_platform.pojo.entity.user.*;
@@ -69,5 +70,18 @@ public interface UserDAO {
     @Update("UPDATE user_private set payment_PWD=#{payment} where user_id=#{user_id}")
     void updatePayment(@Param("payment") String payment,@Param("user_id") String userID);
 
+    @Select("SELECT * FROM user_address WHERE user_base_id=#{userId}")
+    List<UserAddress> getAddressByUserId(@Param("userId") String userId);
 
+    @Update("UPDATE user_address SET country=#{country},province=#{province},city=#{city},detail=#{detail},is_default=#{isDefault} WHERE _id=#{id}")
+    void updateAddress(UserAddress address);
+
+    @Select("SELECT * FROM user_address WHERE user_base_id=#{userId} and is_default=true")
+    UserAddress getDefaultAddress();
+
+    @Select("SELECT MAX(_id) FROM user_address")
+    Integer getAddressMaxId();
+
+    @Insert("INSERT INTO user_address(country,province,city,detail,user_base_id,is_default) VALUES(#{country},#{province},#{city},#{detail},#{userBaseId},#{isDefault})")
+    void addUserAddress(UserAddress userAddress);
 }

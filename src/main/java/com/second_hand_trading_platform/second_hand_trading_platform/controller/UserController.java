@@ -6,6 +6,7 @@ import com.second_hand_trading_platform.second_hand_trading_platform.modules.com
 import com.second_hand_trading_platform.second_hand_trading_platform.modules.common.dto.output.ApiResult;
 import com.second_hand_trading_platform.second_hand_trading_platform.pojo.entity.user.SecurityQuestion;
 import com.second_hand_trading_platform.second_hand_trading_platform.pojo.entity.user.User;
+import com.second_hand_trading_platform.second_hand_trading_platform.pojo.entity.user.UserAddress;
 import com.second_hand_trading_platform.second_hand_trading_platform.pojo.entity.user.UserBaseInfo;
 import com.second_hand_trading_platform.second_hand_trading_platform.service.UserService;
 import com.second_hand_trading_platform.second_hand_trading_platform.utils.PasswordUtils;
@@ -147,5 +148,24 @@ public class UserController {
     ApiResult resetPassword(@RequestBody Map<String,String> body){
         boolean flag = userService.resetPassword(body.get("password"),body.getOrDefault("account",null));
         return flag ? ApiResult.ok("修改成功") : ApiResult.fail("修改失败!");
+    }
+
+    @GetMapping("/getAddress")
+    ApiResult getAddress(){
+        User currentUser = userService.getCurrentUser();
+        UserBaseInfo userBaseInfo = currentUser.getUserBaseInfo();
+        String id = userBaseInfo.getId();
+        List<UserAddress> addressByUserId = userService.getAddressByUserId(id);
+        return ApiResult.ok("查询地址成功",addressByUserId);
+    }
+
+    @PostMapping("/addUserAddress")
+    ApiResult addUserAddress(@RequestBody UserAddress add){
+        if(add.getCountry() != null && add.getCity() != null && add.getProvince() != null && add.getDetail() != null){
+            int id = userService.addAddress(add);
+            add.setId(id);
+            return ApiResult.ok("添加地址成功",add);
+        }
+        return ApiResult.fail("非法请求");
     }
 }

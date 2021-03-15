@@ -5,13 +5,12 @@ import com.second_hand_trading_platform.second_hand_trading_platform.modules.com
 import com.second_hand_trading_platform.second_hand_trading_platform.pojo.entity.goods.Goods;
 import com.second_hand_trading_platform.second_hand_trading_platform.pojo.entity.goods.ImageModel;
 import com.second_hand_trading_platform.second_hand_trading_platform.pojo.entity.user.User;
+import com.second_hand_trading_platform.second_hand_trading_platform.pojo.entity.user.UserBaseInfo;
 import com.second_hand_trading_platform.second_hand_trading_platform.service.GoodsService;
 import com.second_hand_trading_platform.second_hand_trading_platform.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.access.method.P;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
 import java.util.List;
@@ -64,6 +63,16 @@ public class GoodsController {
         Map<String,Object> map = new HashMap<>();
         map.put("goodsInfo",goods);
         map.put("images", goodsImages);
+        UserBaseInfo owner = userService.getUserById(goods.getOwnerId());
+        owner.setToken(null);
+        map.put("owner", owner);
         return ApiResult.ok("查询成功",map);
+    }
+
+
+    @GetMapping("/getGoodsByPage/{page}/{count}")
+    ApiResult getGoodsByPage(@PathVariable("page") Integer page, @PathVariable("count") Integer count){
+        List<Goods> goodsList = goodsService.getGoodsByPage(page,count);
+        return ApiResult.ok("查询成功",goodsList);
     }
 }

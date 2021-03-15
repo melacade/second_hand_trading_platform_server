@@ -1,5 +1,6 @@
 package com.second_hand_trading_platform.second_hand_trading_platform.service;
 
+import com.second_hand_trading_platform.second_hand_trading_platform.pojo.entity.user.UserAddress;
 import com.second_hand_trading_platform.second_hand_trading_platform.modules.common.dto.input.authed_query.AddPaymentQuery;
 import com.second_hand_trading_platform.second_hand_trading_platform.modules.common.dto.input.authed_query.ChangePWDQuery;
 import com.second_hand_trading_platform.second_hand_trading_platform.modules.common.dto.input.authed_query.ResetPayment;
@@ -293,5 +294,22 @@ public class UserService implements UserDetailsService {
 
     public UserPrivate getUserByUserName(String account) {
         return userMapperDAO.lodUserPrivateByUsername(account);
+    }
+
+    public UserBaseInfo getUserById(String userId) {
+        return userMapperDAO.loadUserBaseInfoByUserID(userId);
+    }
+
+    public List<UserAddress> getAddressByUserId(String id) {
+        return userMapperDAO.getAddressByUserId(id);
+    }
+
+    public int addAddress(UserAddress add) {
+        Integer addressMaxId = userMapperDAO.getAddressMaxId();
+        addressMaxId = addressMaxId == null ? 1 : addressMaxId+1;
+        User currentUser = this.getCurrentUser();
+        add.setUserBaseId(currentUser.getUserBaseInfo().getId());
+        userMapperDAO.addUserAddress(add);
+        return addressMaxId;
     }
 }
