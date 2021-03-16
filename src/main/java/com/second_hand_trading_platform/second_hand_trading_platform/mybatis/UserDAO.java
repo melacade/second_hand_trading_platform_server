@@ -84,4 +84,7 @@ public interface UserDAO {
 
     @Insert("INSERT INTO user_address(country,province,city,detail,user_base_id,is_default) VALUES(#{country},#{province},#{city},#{detail},#{userBaseId},#{isDefault})")
     void addUserAddress(UserAddress userAddress);
+
+    @Select("SELECT * FROM user_address WHERE _id=#{address}")
+    UserAddress getAddressById(@Param("address") Integer address);
 }

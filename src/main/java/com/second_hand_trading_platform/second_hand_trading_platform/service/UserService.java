@@ -312,4 +312,8 @@ public class UserService implements UserDetailsService {
         userMapperDAO.addUserAddress(add);
         return addressMaxId;
     }
+
+    public UserAddress getAddressById(Integer address) {
+        return userMapperDAO.getAddressById(address);
+    }
 }
