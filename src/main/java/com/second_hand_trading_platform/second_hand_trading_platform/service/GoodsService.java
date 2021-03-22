@@ -65,6 +65,11 @@ public class GoodsService {
 
     public String createOrder(Order order) {
         String id = UUID.randomUUID().toString().replaceAll("-", "");
+        Integer goodsId = order.getGoodsId();
+        Goods goods = goodsDAOMapper.getGoodsById(goodsId);
+        if(goods.getCount() < order.getCount()){
+            return null;
+        }
         order.setId(id);
         order.setBaseUserId(userService.getCurrentUser().getUserID());
         int count = goodsDAOMapper.createOrder(order);
@@ -117,7 +122,29 @@ public class GoodsService {
         return goodsDAOMapper.getOrdersByPage(start, count, userService.getCurrentUser().getUserID());
     }
 
+    public List<Order> getPayingOrderByPage(int page, int count){
+        int start = (page - 1) * count;
+        return goodsDAOMapper.getPayingOrdersByPage(start, count, userService.getCurrentUser().getUserID());
+    }
+
+    public List<Order> getReceivingOrderByPage(int page, int count){
+        int start = (page - 1) * count;
+        return goodsDAOMapper.getReceivingOrdersByPage(start, count, userService.getCurrentUser().getUserID());
+    }
+    public List<Order> getReturnedOrderByPage(int page, int count){
+        int start = (page - 1) * count;
+        return goodsDAOMapper.getReturnedOrdersByPage(start, count, userService.getCurrentUser().getUserID());
+    }
+
     public Order getOrderInfoById(String orderId) {
         return goodsDAOMapper.getOrderById(orderId,userService.getCurrentUser().getUserID());
     }
+
+    public String getGoodsDefaultImage(int goodsId) {
+        Goods goodsInfo = this.getGoodsInfo(goodsId);
+        return goodsInfo.getDefaultImage();
+    }
+
+
+
 }

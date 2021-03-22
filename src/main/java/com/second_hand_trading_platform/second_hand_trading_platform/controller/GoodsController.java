@@ -87,6 +87,47 @@ public class GoodsController {
         return ApiResult.fail("订单创建失败");
     }
 
+    @GetMapping("/getOrderByPage/{page}/{count}")
+    ApiResult getOrderByPage(@PathVariable("page") Integer page, @PathVariable("count") Integer count){
+        List<Order> orderByPage = goodsService.getOrderByPage(page, count);
+        for (Order order : orderByPage) {
+            Goods goods = goodsService.getGoodsInfo(order.getGoodsId());
+            order.setImage(goods.getDefaultImage());
+            order.setName(goods.getName());
+        }
+        return ApiResult.ok("订单查询成功",orderByPage);
+    }
+    @GetMapping("/getReturnOrderByPage/{page}/{count}")
+    ApiResult getReturnOrderByPage(@PathVariable("page") Integer page, @PathVariable("count") Integer count){
+        List<Order> orderByPage = goodsService.getReturnedOrderByPage(page, count);
+        for (Order order : orderByPage) {
+            Goods goods = goodsService.getGoodsInfo(order.getGoodsId());
+            order.setImage(goods.getDefaultImage());
+            order.setName(goods.getName());
+        }
+        return ApiResult.ok("订单查询成功",orderByPage);
+    }
+    @GetMapping("/getPayingOrderByPage/{page}/{count}")
+    ApiResult getPayingOrderByPage(@PathVariable("page") Integer page, @PathVariable("count") Integer count){
+        List<Order> orderByPage = goodsService.getPayingOrderByPage(page, count);
+        for (Order order : orderByPage) {
+            Goods goods = goodsService.getGoodsInfo(order.getGoodsId());
+            order.setImage(goods.getDefaultImage());
+            order.setName(goods.getName());
+        }
+        return ApiResult.ok("订单查询成功",orderByPage);
+    }
+    @GetMapping("/getReceivingOrderByPage/{page}/{count}")
+    ApiResult getReceivingOrderByPage(@PathVariable("page") Integer page, @PathVariable("count") Integer count){
+        List<Order> orderByPage = goodsService.getReceivingOrderByPage(page, count);
+        for (Order order : orderByPage) {
+            Goods goods = goodsService.getGoodsInfo(order.getGoodsId());
+            order.setImage(goods.getDefaultImage());
+            order.setName(goods.getName());
+        }
+        return ApiResult.ok("订单查询成功",orderByPage);
+    }
+
     @PostMapping("/payOrder")
     ApiResult payOrder(@RequestBody String orderId) {
 
@@ -113,8 +154,6 @@ public class GoodsController {
         data.put("goodsInfo", goods);
         data.put("address",addr);
         return ApiResult.ok("查询订单成功", data);
-
-
     }
 
 

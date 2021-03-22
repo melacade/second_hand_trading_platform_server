@@ -309,11 +309,32 @@ public class UserService implements UserDetailsService {
         addressMaxId = addressMaxId == null ? 1 : addressMaxId+1;
         User currentUser = this.getCurrentUser();
         add.setUserBaseId(currentUser.getUserBaseInfo().getId());
+        int count = userMapperDAO.getUserAddressCount(currentUser.getUserID());
+        add.setIsDefault(count == 0);
         userMapperDAO.addUserAddress(add);
         return addressMaxId;
     }
 
     public UserAddress getAddressById(Integer address) {
         return userMapperDAO.getAddressById(address);
+    }
+
+    public boolean updateAddress(UserAddress address) {
+        Boolean isDefault = address.getIsDefault();
+        if(isDefault){
+            List<UserAddress > defaultAddresses = userMapperDAO.getDefaultAddress(this.getCurrentUser().getUserID());
+            for (UserAddress defaultAddress : defaultAddresses) {
+                defaultAddress.setIsDefault(false);
+                updateAddress(defaultAddress);
+            }
+        }
+        return 1 == userMapperDAO.updateAddress(address);
+    }
+
+
+    public UserAddress getDefaultAddress() {
+        List<UserAddress> defaultAddress = userMapperDAO.getDefaultAddress(this.getCurrentUser().getUserID());
+
+        return defaultAddress == null || defaultAddress.size() == 0 ? null : defaultAddress.get(0);
     }
 }

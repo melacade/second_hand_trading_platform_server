@@ -9,9 +9,9 @@ public class Goods {
     Integer id;
     String name;
     String info;
-    int price;
+    Double price;
     String ownerId;
-    int originalPrice;
+    Double originalPrice;
     String defaultImage;
     int count;
     int newPercentage;

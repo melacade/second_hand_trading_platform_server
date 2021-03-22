@@ -70,14 +70,14 @@ public interface UserDAO {
     @Update("UPDATE user_private set payment_PWD=#{payment} where user_id=#{user_id}")
     void updatePayment(@Param("payment") String payment,@Param("user_id") String userID);
 
-    @Select("SELECT * FROM user_address WHERE user_base_id=#{userId}")
+    @Select("SELECT * FROM user_address WHERE user_base_id=#{userId} ORDER BY is_default DESC")
     List<UserAddress> getAddressByUserId(@Param("userId") String userId);
 
     @Update("UPDATE user_address SET country=#{country},province=#{province},city=#{city},detail=#{detail},is_default=#{isDefault} WHERE _id=#{id}")
-    void updateAddress(UserAddress address);
+    Integer updateAddress(UserAddress address);
 
     @Select("SELECT * FROM user_address WHERE user_base_id=#{userId} and is_default=true")
-    UserAddress getDefaultAddress();
+    List<UserAddress> getDefaultAddress(@Param("userId") String userId);
 
     @Select("SELECT MAX(_id) FROM user_address")
     Integer getAddressMaxId();
@@ -87,4 +87,7 @@ public interface UserDAO {
 
     @Select("SELECT * FROM user_address WHERE _id=#{address}")
     UserAddress getAddressById(@Param("address") Integer address);
+
+    @Select("SELECT ACCOUNT(_id) FROM user_address WHERE user_base_id=#{userId}")
+    int getUserAddressCount(@Param("userId") String userId);
 }

@@ -168,4 +168,18 @@ public class UserController {
         }
         return ApiResult.fail("非法请求");
     }
+
+
+    @PostMapping("/updateAddress")
+    ApiResult updateAddress(@RequestBody UserAddress address){
+        boolean flag = userService.updateAddress(address);
+        return flag ? ApiResult.ok("地址更新成功") : ApiResult.fail("地址更新失败");
+    }
+
+    @GetMapping("/getDefaultAddress")
+    ApiResult getDefaultAddress(){
+        UserAddress defaultAddress = userService.getDefaultAddress();
+        return defaultAddress == null ? ApiResult.fail("没有地址"):ApiResult.ok("默认地址查询成功",defaultAddress);
+    }
+
 }

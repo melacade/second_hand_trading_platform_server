@@ -13,7 +13,7 @@ public interface GoodsDAO {
     @Insert("INSERT INTO goods(_id,name,info,price,original_price,default_image,count,new_percentage,owner_id) VALUES(#{id},#{name},#{info},#{price},#{originalPrice},#{defaultImage},#{count},#{newPercentage},#{ownerId})")
     Integer addNewGoods(Goods goods);
 
-    @Select("Select * FROM goods order by created_at LIMIT #{start},#{count}")
+    @Select("Select * FROM goods order by created_at DESC LIMIT #{start},#{count}")
     List<Goods> getGoodsByPage(@Param("count") int count, @Param("start") int start);
 
     @Insert("INSERT INTO goods_image(goods_id,image) VALUES(#{goodsId},#{image})")
@@ -45,8 +45,20 @@ public interface GoodsDAO {
     @Update("UPDATE `order` SET status=#{status},price=#{price},address=#{address},count=#{count} WHERE _id=#{id}")
     int updateOrder(Order order);
 
-    @Select("Select * FROM `order` WHERE user_base_id=#{uid} order by created_at LIMIT #{start},#{count}")
+    @Select("Select * FROM `order` WHERE base_user_id=#{uid} and status=0 order by created_at LIMIT #{start},#{count}")
+    List<Order> getPayingOrdersByPage(@Param("start") int start, @Param("count") int count, @Param("uid") String userId);
+
+
+    @Select("Select * FROM `order` WHERE base_user_id=#{uid} and status=1 order by created_at LIMIT #{start},#{count}")
+    List<Order> getReceivingOrdersByPage(@Param("start") int start, @Param("count") int count, @Param("uid") String userId);
+
+    @Select("Select * FROM `order` WHERE base_user_id=#{uid} and status=-1 order by created_at LIMIT #{start},#{count}")
+    List<Order> getReturnedOrdersByPage(@Param("start") int start, @Param("count") int count, @Param("uid") String userId);
+
+    @Select("Select * FROM `order` WHERE base_user_id=#{uid} order by created_at LIMIT #{start},#{count}")
     List<Order> getOrdersByPage(@Param("start") int start, @Param("count") int count, @Param("uid") String userId);
+
+
 
     @Update("UPDATE goods SET name=#{name},info=#{info},price=#{price},original_price=#{originalPrice},default_image=#{defaultImage},`count`=#{count},new_percentage=#{newPercentage} WHERE _id=#{id}")
     void updateGoods(Goods goods);

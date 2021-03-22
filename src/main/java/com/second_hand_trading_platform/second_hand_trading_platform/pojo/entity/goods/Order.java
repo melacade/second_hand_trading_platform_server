@@ -8,10 +8,12 @@ import java.sql.Timestamp;
 public class Order {
     String id;
     Integer goodsId;
-    Integer price;
+    String name;
+    Double price;
     String baseUserId;
     Integer address;
     Integer count;
     Integer status;
     Timestamp createdAt;
+    String image;
 }
