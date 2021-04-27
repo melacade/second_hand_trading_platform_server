@@ -6,13 +6,6 @@ import org.springframework.security.crypto.codec.Hex;
 
 import java.security.MessageDigest;
 
-/**
- *  <p> 加密工具 </p>
- *
- * @description:
- * @author: zhengqing
- * @date: 2019/10/13 0013 15:25
- */
 @Slf4j
 public class PasswordUtils {
     private static final long MAX_TIME_VALUE = 2592000000L;

@@ -14,13 +14,7 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- * <p> 多次读写BODY用HTTP REQUEST - 解决流只能读一次问题 </p>
- *
- * @author : zhengqing
- * @description :
- * @date : 2019/10/12 15:42
- */
+
 @Slf4j
 public class MultiReadHttpServletRequest extends HttpServletRequestWrapper {
 

@@ -3,13 +3,7 @@ package com.second_hand_trading_platform.second_hand_trading_platform.config.sec
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- *  <p> 全局常用变量 </p>
- *
- * @description :
- * @author : zhengqing
- * @date : 2019/10/12 14:47
- */
+
 public class Constants {
 
     /**

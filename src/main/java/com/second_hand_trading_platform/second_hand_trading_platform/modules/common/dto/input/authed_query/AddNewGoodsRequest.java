@@ -10,4 +10,5 @@ import java.util.List;
 public class AddNewGoodsRequest extends AuthQuery {
     Goods goods;
     List<ImageModel> imgs;
+
 }

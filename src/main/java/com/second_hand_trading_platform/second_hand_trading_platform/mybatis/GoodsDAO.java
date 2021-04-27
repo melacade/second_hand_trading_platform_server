@@ -1,8 +1,6 @@
 package com.second_hand_trading_platform.second_hand_trading_platform.mybatis;
 
-import com.second_hand_trading_platform.second_hand_trading_platform.pojo.entity.goods.Goods;
-import com.second_hand_trading_platform.second_hand_trading_platform.pojo.entity.goods.ImageModel;
-import com.second_hand_trading_platform.second_hand_trading_platform.pojo.entity.goods.Order;
+import com.second_hand_trading_platform.second_hand_trading_platform.pojo.entity.goods.*;
 import org.apache.ibatis.annotations.*;
 import org.springframework.security.core.parameters.P;
 
@@ -66,6 +64,65 @@ public interface GoodsDAO {
     @Select("SELECT * FROM `order` WHERE _id=#{orderId} and base_user_id=#{userId}")
     Order getOrderById(@Param("orderId") String orderId,@Param("userId") String userId);
 
+    @Select("SELECT MAX(_id) FROM goods_label_info")
+    Integer getLabelMaxId();
 
+    @Insert("INSERT INTO goods_label_info(name,info) VALUES(#{name},#{info})")
+    int addLabel(GoodsLabelInfo labelInfo);
+
+    @Select("SELECT * FROM goods_label_info")
+    List<GoodsLabelInfo> getLabels();
+
+    @Select("SELECT * FROM goods_label_info WHERE name=#{name}")
+    GoodsLabelInfo getLabelByName(@Param("name") String name);
+
+
+    @Insert("INSERT INTO goods_attach_label(goods_id,goods_label_info) VALUES(#{goodsId},#{label})")
+    int addAttachLabel(@Param("label") Integer label,@Param("goodsId") Integer goodsId);
+
+
+    @Select("SELECT * FROM goods WHERE owner_id=#{userID} order by created_at DESC LIMIT #{start},#{count}")
+    List<Goods> getSaleGoods(@Param("userID") String userID,@Param("start") int start,@Param("count") int count);
+
+    @Select("SELECT SUM(count) FROM `order` WHERE goods_id=#{id} and status>0")
+    Integer getSailedCountByGoodsId(Integer id);
+
+    @Select("SELECT * FROM `comments` WHERE goods_id=#{goodsId} ORDER BY created_at DESC LIMIT #{start},#{count}")
+    List<Comments> getCommentsByPage(@Param("goodsId") Integer goodsId,@Param("start") int start,@Param("count") Integer count);
+
+    @Insert("INSERT INTO `comments`(user_base_id,goods_id,content) VALUES(#{userId},#{goodsId},#{content})")
+    Integer addComment(@Param("userId") String userID,@Param("goodsId") String goodsId,@Param("content") String content);
+
+    @Select("SELECT *\n" +
+            "FROM goods g\n" +
+            "WHERE g._id\n" +
+            "          IN\n" +
+            "      (SELECT *\n" +
+            "       FROM (\n" +
+            "                SELECT t.goods_id\n" +
+            "                FROM (SELECT o.goods_id        AS goods_id,\n" +
+            "                             COUNT(o.goods_id) AS con\n" +
+            "                      FROM `order` o\n" +
+            "                      GROUP BY o.goods_id) t\n" +
+            "                ORDER BY t.con\n" +
+            "                LIMIT 0,10\n" +
+            "            ) m);")
+    List<Goods> getHotGoods();
+
+    @Select("SELECT goods_id FROM collect WHERE user_base_id=#{uid}")
+    List<String> getCollectedGoodsId(@Param("uid") String uid);
+
+    @Select("SELECT goods_label_info AS id, COUNT(goods_label_info) AS con\n" +
+            "FROM goods_attach_label\n" +
+            "WHERE goods_id IN (${join})\n" +
+            "GROUP BY goods_label_info\n" +
+            "ORDER BY con DESC\n" +
+            "limit 0,3")
+    List<Recommend> getCollectedLabels(@Param("join") String join);
+
+    @Select("SELECT * FROM goods WHERE _id IN (SELECT b.goods_id FROM (SELECT * FROM goods_attach_label WHERE goods_id NOT IN (${collected}) AND goods_label_info IN (${labels}))b) LIMIT 0,10")
+    List<Goods> getRecommend(@Param("labels") String labels,@Param("collected") String goods);
+
+    //
     //List<Goods> getGoodsByUserId();
 }

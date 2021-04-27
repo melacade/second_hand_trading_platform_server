@@ -58,7 +58,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http.authorizeRequests() // 开启 HttpSecurity 配置
-                .antMatchers("/login","/index", "/api/goods/search","/api/user/register","/api/user/checkSecuriy","/api/user/resetPassword","/api/user/validateProblems","/static/**").permitAll()
+                .antMatchers("/login","/index", "/api/goods/search","/api/user/register","/api/user/checkSecuriy","/api/user/resetPassword","/api/user/validateProblems","/api/goods/getRecommend","/static/**").permitAll()
                 .antMatchers(HttpMethod.OPTIONS, "/**").denyAll()
                 .antMatchers("/api/user/**").authenticated()
                 .and().headers().frameOptions().disable()

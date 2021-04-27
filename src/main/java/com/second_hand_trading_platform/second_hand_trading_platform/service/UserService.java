@@ -337,4 +337,55 @@ public class UserService implements UserDetailsService {
 
         return defaultAddress == null || defaultAddress.size() == 0 ? null : defaultAddress.get(0);
     }
+
+    public void getGoodsStatus(String goodsId, Map<String,Boolean> data) {
+        String userID;
+        try {
+            userID= this.getCurrentUser().getUserID();
+        }catch (Exception e){
+            userID = null;
+        }
+        if(userID == null) return;
+        Integer l = userMapperDAO.getGoodsLike(userID,goodsId);
+        Integer c = userMapperDAO.getGoodsCollect(userID,goodsId);
+        data.put("like",l != null && l >= 1);
+        data.put("collect", c != null && c >= 1);
+    }
+
+    public void addGood(String goodsId, Map<String, Boolean> data) {
+        String userID = this.getCurrentUser().getUserID();
+        Integer count = userMapperDAO.addGood(goodsId,userID);
+        if(count == null || count == 0){
+            return;
+        }
+        data.put("like",true);
+    }
+
+    public void addCollect(String goodsId, Map<String, Boolean> data) {
+        String userID = this.getCurrentUser().getUserID();
+        Integer count = userMapperDAO.addCollect(goodsId,userID);
+        if(count == null || count == 0){
+            return;
+        }
+        data.put("collect",true);
+
+    }
+
+    public void delGood(String goodsId, Map<String, Boolean> data) {
+        String userID = this.getCurrentUser().getUserID();
+        Integer count = userMapperDAO.delGood(goodsId,userID);
+        if(count == null || count == 0){
+            return;
+        }
+        data.put("like",false);
+    }
+
+    public void delCollect(String goodsId, Map<String, Boolean> data) {
+        String userID = this.getCurrentUser().getUserID();
+        Integer count = userMapperDAO.delCollect(goodsId,userID);
+        if(count == null || count == 0){
+            return;
+        }
+        data.put("collect",false);
+    }
 }

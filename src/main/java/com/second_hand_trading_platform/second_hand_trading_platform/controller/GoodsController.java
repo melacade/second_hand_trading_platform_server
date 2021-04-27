@@ -3,6 +3,7 @@ package com.second_hand_trading_platform.second_hand_trading_platform.controller
 import com.second_hand_trading_platform.second_hand_trading_platform.modules.common.dto.input.authed_query.AddNewGoodsRequest;
 import com.second_hand_trading_platform.second_hand_trading_platform.modules.common.dto.output.ApiResult;
 import com.second_hand_trading_platform.second_hand_trading_platform.pojo.entity.goods.Goods;
+import com.second_hand_trading_platform.second_hand_trading_platform.pojo.entity.goods.GoodsLabelInfo;
 import com.second_hand_trading_platform.second_hand_trading_platform.pojo.entity.goods.ImageModel;
 import com.second_hand_trading_platform.second_hand_trading_platform.pojo.entity.goods.Order;
 import com.second_hand_trading_platform.second_hand_trading_platform.pojo.entity.user.User;
@@ -41,6 +42,7 @@ public class GoodsController {
             img.setGoodsId(newGoods);
         }
         boolean b = goodsService.addGoodsImages(imgs);
+        boolean t = goodsService.addAttachLabels(goods.getLabels(),newGoods);
         if (newGoods == null) {
             return ApiResult.fail("添加失败");
         }
@@ -156,5 +158,46 @@ public class GoodsController {
         return ApiResult.ok("查询订单成功", data);
     }
 
+
+    @PostMapping("/addLabel")
+    ApiResult addLabel(@RequestBody GoodsLabelInfo labelInfo){
+        if(labelInfo.getName().length() >= 2){
+            GoodsLabelInfo goodsLabelInfo = goodsService.addLabel(labelInfo);
+            if(goodsLabelInfo != null){
+                return ApiResult.ok("标签创建成功",goodsLabelInfo);
+            }
+        }
+        return ApiResult.fail("标签创建失败！");
+    }
+
+    @GetMapping("/getLabels")
+    ApiResult getLabels(){
+        List<GoodsLabelInfo> labels =  goodsService.getLabels();
+        return ApiResult.ok("标签查询成功！",labels);
+    }
+
+
+    @GetMapping("/getSaleGoodsByPage/{page}/{count}")
+    ApiResult getSaleGoodsByPage(@PathVariable("page") Integer page, @PathVariable("count") Integer count){
+        List<Goods> goodsList = goodsService.getSaleGoodsByPage(page,count);
+        return ApiResult.ok("出售商品查询成功！",goodsList);
+    }
+
+    @GetMapping("/getCommentsByPage/{goodsId}/{page}/{count}")
+    ApiResult getCommentsByPage(@PathVariable Integer goodsId, @PathVariable Integer page, @PathVariable Integer count){
+        List<Map<String,Object>> comments = goodsService.getCommentsByPage(goodsId,page,count);
+        return ApiResult.ok("评论查询成功",comments);
+    }
+
+    @PostMapping("/postComment")
+    ApiResult postComment(@RequestBody Map<String,String> comment){
+
+        return goodsService.addComment(comment.get("goodsId"),comment.get("content")) ? ApiResult.ok("评论创建成功") : ApiResult.fail("评论创建失败");
+    }
+
+    @GetMapping("/getRecommend")
+    ApiResult getRecommend(){
+        return ApiResult.ok("推荐成功",goodsService.getRecommend());
+    }
 
 }

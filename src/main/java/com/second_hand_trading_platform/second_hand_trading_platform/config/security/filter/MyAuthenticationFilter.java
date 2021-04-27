@@ -26,13 +26,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 
-/**
- * <p> 访问鉴权 - 每次访问接口都会经过此 </p>
- *
- * @author : zhengqing
- * @description :
- * @date : 2019/10/12 16:17
- */
+
 @Slf4j
 @Component
 public class MyAuthenticationFilter extends OncePerRequestFilter {

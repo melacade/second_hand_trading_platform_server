@@ -11,13 +11,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.PrintWriter;
 
-/**
- *  <p> 使用response输出JSON </p>
- *
- * @description :
- * @author : zhengqing
- * @date : 2019/10/11 17:27
- */
+
 @Slf4j
 public class ResponseUtils {
 

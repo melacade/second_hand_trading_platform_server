@@ -1,10 +1,8 @@
 package com.second_hand_trading_platform.second_hand_trading_platform.mybatis;
 
 
-import com.second_hand_trading_platform.second_hand_trading_platform.pojo.entity.user.UserAddress;
-import org.apache.ibatis.annotations.*;
-
 import com.second_hand_trading_platform.second_hand_trading_platform.pojo.entity.user.*;
+import org.apache.ibatis.annotations.*;
 
 import java.util.List;
 @Mapper
@@ -88,6 +86,24 @@ public interface UserDAO {
     @Select("SELECT * FROM user_address WHERE _id=#{address}")
     UserAddress getAddressById(@Param("address") Integer address);
 
-    @Select("SELECT ACCOUNT(_id) FROM user_address WHERE user_base_id=#{userId}")
+    @Select("SELECT COUNT(_id) FROM user_address WHERE user_base_id=#{userId}")
     int getUserAddressCount(@Param("userId") String userId);
+
+    @Select("SELECT COUNT(_id) FROM `like` WHERE user_base_id=#{userId} and goods_id=#{goodsId}")
+    Integer getGoodsLike(@Param("userId") String userID,@Param("goodsId") String goodsId);
+
+    @Select("SELECT COUNT(_id) FROM `collect` WHERE user_base_id=#{userId} and goods_id=#{goodsId}")
+    Integer getGoodsCollect(@Param("userId") String userID, @Param("goodsId") String goodsId);
+
+    @Insert("INSERT INTO `like`(goods_id,user_base_id) VALUES(#{goodsId},#{userId})")
+    Integer addGood(@Param("goodsId") String goodsId,@Param("userId") String userID);
+
+    @Insert("INSERT INTO `collect`(goods_id,user_base_id) VALUES(#{goodsId},#{userId})")
+    Integer addCollect(@Param("goodsId") String goodsId,@Param("userId") String userID);
+
+    @Delete("DELETE FROM `like` WHERE goods_id=#{goodsId} and user_base_id=#{userId}")
+    Integer delGood(@Param("goodsId") String goodsId,@Param("userId") String userID);
+
+    @Delete("DELETE FROM `collect` WHERE goods_id=#{goodsId} and user_base_id=#{userId}")
+    Integer delCollect(@Param("goodsId") String goodsId,@Param("userId") String userID);
 }
